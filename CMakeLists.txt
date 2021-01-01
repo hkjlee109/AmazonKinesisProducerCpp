@@ -8,12 +8,12 @@ if(NOT EXISTS ${AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC})
   message(FATAL_ERROR "AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC ${AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC} does not exist.")
 endif()
 
+file(GLOB PIC_HEADERS "${AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC}/open-source/amazon-kinesis-video-streams-pic/src/*/include")
+
+include_directories(${PIC_HEADERS})
 include_directories(${AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC}/src)
 include_directories(${AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC}/src/credential-providers)
-#include_directories(${AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC}/open-source/local/include)
-#include_directories(${AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC}/open-source/include)
-#include_directories(${AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC}/open-source/amazon-kinesis-video-streams-producer-c/src/include)
-#include_directories(${AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC}/src/common)
+include_directories(${AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC}/open-source/amazon-kinesis-video-streams-producer-c/src/include)
 
 option(BUILD_GSTREAMER_PLUGIN "Build kvssink GStreamer plugin" ON)
 add_subdirectory(${AMAZON_KINESIS_PRODUCER_CPP_SDK_SRC} ./sdk)
@@ -27,3 +27,5 @@ link_directories(${CMAKE_CURRENT_BINARY_DIR}/sdk/)
 
 add_executable(AmazonKinesisProducerCpp Source/main.cpp)
 target_link_libraries(AmazonKinesisProducerCpp ${GST_APP_LIBRARIES} KinesisVideoProducer)
+
+configure_file(./Source/kvs_log_configuration ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)

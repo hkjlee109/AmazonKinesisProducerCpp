@@ -1,6 +1,6 @@
 # AmazonKinesisProducerCpp
 
-Environment:
+## Environment:
 Ubuntu20
 ```
 sudo apt-get install git build-essential cmake g++ wget curl
@@ -8,17 +8,15 @@ sudo apt-get install libssl-dev libcurl4-openssl-dev liblog4cplus-1.1-9 liblog4c
 ```
 
 
-To configure:
+## Usage
+
+### Configure and Build
 ```
 cmake -S . -B build
+cmake --build build
 ```
 
-To build:
-```
-cmake -S . -B build
-```
-
-To execute: 
+### Run 
 ```
 cd build && ./run.sh
 ```

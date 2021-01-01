@@ -62,7 +62,6 @@ typedef struct _CustomData {
     _CustomData():
             h264_stream_supported(false),
             synthetic_dts(0),
-            last_unpersisted_file_idx(0),
             stream_status(STATUS_SUCCESS),
             main_loop(NULL),
             first_pts(GST_CLOCK_TIME_NONE),

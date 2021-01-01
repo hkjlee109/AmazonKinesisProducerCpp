@@ -28,6 +28,6 @@ link_directories(${CMAKE_CURRENT_BINARY_DIR}/sdk/)
 add_executable(AmazonKinesisProducerCpp Source/main.cpp)
 target_link_libraries(AmazonKinesisProducerCpp ${GST_APP_LIBRARIES} KinesisVideoProducer)
 
-file(COPY ${SDK}/open-source/local  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${SDK}/open-source/local/lib  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ./Source/kvs_log_configuration  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ./Source/run.sh  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

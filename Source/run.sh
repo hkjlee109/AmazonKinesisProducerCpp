@@ -1,3 +1,7 @@
 #! /bin/sh
 
-LD_LIBRARY_PATH=`pwd`/lib ./AmazonKinesisProducerCpp
+LD_LIBRARY_PATH=`pwd`/lib \
+AWS_ACCESS_KEY_ID=MYAWSKEY \
+AWS_SECRET_ACCESS_KEY=MYAWSSECRETKEY \
+AWS_DEFAULT_REGION=eu-central-1 \
+./AmazonKinesisProducerCpp MYAWSSTREAMNAME 

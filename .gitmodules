@@ -1,3 +1,6 @@
 [submodule "Library/amazon-kinesis-video-streams-producer-sdk-cpp"]
 	path = Library/sdk
 	url = https://github.com/awslabs/amazon-kinesis-video-streams-producer-sdk-cpp
+[submodule "Toolchains"]
+	path = Toolchains
+	url = https://github.com/kwoolytech/Toolchains

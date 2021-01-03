@@ -49,14 +49,6 @@ LOGGER_TAG("com.amazonaws.kinesis.video.gstreamer");
 #define DEFAULT_CREDENTIAL_ROTATION_SECONDS 3600
 #define DEFAULT_CREDENTIAL_EXPIRATION_SECONDS 180
 
-typedef struct _FileInfo {
-    _FileInfo():
-            path(""),
-            last_fragment_ts(0) {}
-    string path;
-    uint64_t last_fragment_ts;
-} FileInfo;
-
 typedef struct _CustomData {
 
     _CustomData():

@@ -495,10 +495,6 @@ void kinesis_video_stream_init(CustomData *data) {
 }
 
 int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElement *pipeline) {
-
-    bool vtenc = false, isOnRpi = false;
-
-    /* init stream format */
     int width = 0, height = 0, framerate = 25, bitrateInKBPS = 512;
     // index 1 is stream name which is already processed
     for (int i = 2; i < argc; i++) {
@@ -506,7 +502,6 @@ int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElem
             if ((0 == STRCMPI(argv[i], "-w")) ||
                 (0 == STRCMPI(argv[i], "/w")) ||
                 (0 == STRCMPI(argv[i], "--w"))) {
-                // process the width
                 if (STATUS_FAILED(STRTOI32(argv[i + 1], NULL, 10, &width))) {
                     return 1;
                 }
@@ -514,7 +509,6 @@ int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElem
             else if ((0 == STRCMPI(argv[i], "-h")) ||
                      (0 == STRCMPI(argv[i], "/h")) ||
                      (0 == STRCMPI(argv[i], "--h"))) {
-                // process the width
                 if (STATUS_FAILED(STRTOI32(argv[i + 1], NULL, 10, &height))) {
                     return 1;
                 }
@@ -522,7 +516,6 @@ int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElem
             else if ((0 == STRCMPI(argv[i], "-f")) ||
                      (0 == STRCMPI(argv[i], "/f")) ||
                      (0 == STRCMPI(argv[i], "--f"))) {
-                // process the width
                 if (STATUS_FAILED(STRTOI32(argv[i + 1], NULL, 10, &framerate))) {
                     return 1;
                 }
@@ -530,12 +523,11 @@ int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElem
             else if ((0 == STRCMPI(argv[i], "-b")) ||
                      (0 == STRCMPI(argv[i], "/b")) ||
                      (0 == STRCMPI(argv[i], "--b"))) {
-                // process the width
                 if (STATUS_FAILED(STRTOI32(argv[i + 1], NULL, 10, &bitrateInKBPS))) {
                     return 1;
                 }
             }
-            // skip the index
+
             i++;
         }
         else if (0 == STRCMPI(argv[i], "-?") ||
@@ -570,37 +562,15 @@ int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElem
     appsink = gst_element_factory_make("appsink", "appsink");
     h264parse = gst_element_factory_make("h264parse", "h264parse"); // needed to enforce avc stream format
 
-    // Attempt to create vtenc encoder
-    encoder = gst_element_factory_make("vtenc_h264_hw", "encoder");
-    if (encoder) {
-        source = gst_element_factory_make("autovideosrc", "source");
-        vtenc = true;
-    } else {
-        // Failed creating vtenc - check pi hardware encoder
-        encoder = gst_element_factory_make("omxh264enc", "encoder");
-        if (encoder) {
-            isOnRpi = true;
-        } else {
-            // - attempt x264enc
-            encoder = gst_element_factory_make("x264enc", "encoder");
-            isOnRpi = false;
-        }
-        source = gst_element_factory_make("v4l2src", "source");
-        if (!source) {
-            source = gst_element_factory_make("ksvideosrc", "source");
-        }
-        vtenc = false;
-    }
+    encoder = gst_element_factory_make("x264enc", "encoder");
+    source = gst_element_factory_make("v4l2src", "source");
 
     if (!pipeline || !source || !source_filter || !encoder || !filter || !appsink || !h264parse) {
         g_printerr("Not all elements could be created.\n");
         return 1;
     }
 
-    /* configure source */
-    if (!vtenc) {
-        g_object_set(G_OBJECT (source), "do-timestamp", TRUE, "device", "/dev/video0", NULL);
-    }
+    g_object_set(G_OBJECT (source), "do-timestamp", TRUE, "device", "/dev/video0", NULL);
 
     /* Determine whether device supports h264 encoding and select a streaming resolution supported by the device*/
     if (GST_STATE_CHANGE_FAILURE == gst_element_set_state(source, GST_STATE_READY)) {
@@ -627,26 +597,8 @@ int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElem
             return 1;
         }
     } else {
-        vector<int> res_width = {640, 1280, 1920};
-        vector<int> res_height = {480, 720, 1080};
-        vector<int> fps = {30, 25, 20};
-        bool found_resolution = false;
-        for (int i = 0; i < res_width.size(); i++) {
-            width = res_width[i];
-            height = res_height[i];
-            for (int j = 0; j < fps.size(); j++) {
-                framerate = fps[j];
-                if (resolution_supported(src_caps, query_caps_raw, query_caps_h264, *data, width, height, framerate)) {
-                    found_resolution = true;
-                    break;
-                }
-            }
-            if (found_resolution) {
-                break;
-            }
-        }
-        if (!found_resolution) {
-            g_printerr("Default list of resolutions (1920x1080, 1280x720, 640x480) are not supported by video source\n");
+        if (!resolution_supported(src_caps, query_caps_raw, query_caps_h264, *data, 1280, 720, 20)) {
+            g_printerr("Default resolution 1280x720 and framerate 20 are not supported by video source\n");
             return 1;
         }
     }
@@ -677,22 +629,14 @@ int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElem
                             NULL);
         g_object_set(G_OBJECT (source_filter), "caps", query_caps_h264, NULL);
     }
+
     gst_caps_unref(query_caps_h264);
     gst_caps_unref(query_caps_raw);
 
     /* configure encoder */
     if (!data->h264_stream_supported){
-        if (vtenc) {
-            g_object_set(G_OBJECT (encoder), "allow-frame-reordering", FALSE, "realtime", TRUE, "max-keyframe-interval",
-                         45, "bitrate", bitrateInKBPS, NULL);
-        } else if (isOnRpi) {
-            g_object_set(G_OBJECT (encoder), "control-rate", 2, "target-bitrate", bitrateInKBPS*1000,
-                         "periodicty-idr", 45, "inline-header", FALSE, NULL);
-        } else {
-            g_object_set(G_OBJECT (encoder), "bframes", 0, "key-int-max", 45, "bitrate", bitrateInKBPS, NULL);
-        }
+        g_object_set(G_OBJECT (encoder), "bframes", 0, "key-int-max", 45, "bitrate", bitrateInKBPS, NULL);
     }
-
 
     /* configure filter */
     GstCaps *h264_caps = gst_caps_new_simple("video/x-h264",
@@ -786,12 +730,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    const int PUTFRAME_FAILURE_RETRY_COUNT = 3;
-
     CustomData data;
     char stream_name[MAX_STREAM_NAME_LEN + 1];
-    int ret = 0;
-    int file_retry_count = PUTFRAME_FAILURE_RETRY_COUNT;
     STATUS stream_status = STATUS_SUCCESS;
 
     STRNCPY(stream_name, argv[1], MAX_STREAM_NAME_LEN);
@@ -806,8 +746,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    bool do_retry = true;
-
     gstreamer_init(argc, argv, &data);
     if (STATUS_SUCCEEDED(stream_status)) {
         // if stream_status is success after eos, send out remaining frames.
@@ -816,7 +754,6 @@ int main(int argc, char* argv[]) {
         data.kinesis_video_stream->stop();
     }
 
-    // CleanUp
     data.kinesis_video_producer->freeStream(data.kinesis_video_stream);
 
     return 0;

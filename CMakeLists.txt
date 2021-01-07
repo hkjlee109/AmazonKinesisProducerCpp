@@ -1,12 +1,10 @@
 cmake_minimum_required(VERSION 3.13)
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake;${CMAKE_MODULE_PATH}")
+include(Utilities)
 project(AmazonKinesisProducerCpp)
 
 set(CMAKE_CXX_STANDARD 11)
 set(SDK "${CMAKE_CURRENT_SOURCE_DIR}/Library/sdk")
-
-if(NOT EXISTS ${SDK})
-  message(FATAL_ERROR "SDK ${SDK} does not exist.")
-endif()
 
 file(GLOB PIC_HEADERS "${SDK}/open-source/amazon-kinesis-video-streams-pic/src/*/include")
 
@@ -16,6 +14,8 @@ include_directories(${SDK}/src/credential-providers)
 include_directories(${SDK}/open-source/amazon-kinesis-video-streams-producer-c/src/include)
 
 option(BUILD_GSTREAMER_PLUGIN "Build kvssink GStreamer plugin" ON)
+set(BUILD_ARGS -DBUILD_LOG4CPLUS_HOST=${BUILD_LOG4CPLUS_HOST})
+build_dependency(log4cplus ${BUILD_ARGS})
 add_subdirectory(${SDK} ./sdk)
 
 find_package(PkgConfig REQUIRED)

@@ -8,4 +8,4 @@ CXX=$TOOLCHAIN_PATH/arm-linux-gnueabihf-c++ \
 LD=$TOOLCHAIN_PATH/arm-linux-gnueabihf-ld \
 CFLAGS="-fPIC" \
 CXXFLAGS="-fPIC" \
-cmake -DBUILD_OPENSSL_PLATFORM=linux-generic32 -S . -B build/armhf && cmake --build build/armhf
+cmake -DBUILD_OPENSSL_PLATFORM=linux-generic32 -DBUILD_LOG4CPLUS_HOST=arm -S . -B build/armhf && cmake --build build/armhf

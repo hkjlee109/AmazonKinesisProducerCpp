@@ -527,8 +527,7 @@ int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElem
             }
             else if ((0 == STRCMPI(argv[i], "-d")) ||
                 (0 == STRCMPI(argv[i], "--d"))) {
-                if (STATUS_FAILED(STRCPY(device, argv[i + 1]))) {
-                    return 1;
+                    STRCPY(device, argv[i + 1]);
                 }
             }
 

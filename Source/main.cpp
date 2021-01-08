@@ -496,34 +496,38 @@ void kinesis_video_stream_init(CustomData *data) {
 
 int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElement *pipeline) {
     int width = 0, height = 0, framerate = 25, bitrateInKBPS = 512;
+    char device[32] = { 0 };
+
     // index 1 is stream name which is already processed
     for (int i = 2; i < argc; i++) {
         if (i < argc) {
             if ((0 == STRCMPI(argv[i], "-w")) ||
-                (0 == STRCMPI(argv[i], "/w")) ||
                 (0 == STRCMPI(argv[i], "--w"))) {
                 if (STATUS_FAILED(STRTOI32(argv[i + 1], NULL, 10, &width))) {
                     return 1;
                 }
             }
             else if ((0 == STRCMPI(argv[i], "-h")) ||
-                     (0 == STRCMPI(argv[i], "/h")) ||
                      (0 == STRCMPI(argv[i], "--h"))) {
                 if (STATUS_FAILED(STRTOI32(argv[i + 1], NULL, 10, &height))) {
                     return 1;
                 }
             }
             else if ((0 == STRCMPI(argv[i], "-f")) ||
-                     (0 == STRCMPI(argv[i], "/f")) ||
                      (0 == STRCMPI(argv[i], "--f"))) {
                 if (STATUS_FAILED(STRTOI32(argv[i + 1], NULL, 10, &framerate))) {
                     return 1;
                 }
             }
             else if ((0 == STRCMPI(argv[i], "-b")) ||
-                     (0 == STRCMPI(argv[i], "/b")) ||
                      (0 == STRCMPI(argv[i], "--b"))) {
                 if (STATUS_FAILED(STRTOI32(argv[i + 1], NULL, 10, &bitrateInKBPS))) {
+                    return 1;
+                }
+            }
+            else if ((0 == STRCMPI(argv[i], "-d")) ||
+                (0 == STRCMPI(argv[i], "--d"))) {
+                if (STATUS_FAILED(STRCPY(device, argv[i + 1]))) {
                     return 1;
                 }
             }
@@ -531,14 +535,12 @@ int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElem
             i++;
         }
         else if (0 == STRCMPI(argv[i], "-?") ||
-                 0 == STRCMPI(argv[i], "--?") ||
                  0 == STRCMPI(argv[i], "--help")) {
             g_printerr("Invalid arguments\n");
             return 1;
         }
         else if (argv[i][0] == '/' ||
                  argv[i][0] == '-') {
-            // Unknown option
             g_printerr("Invalid arguments\n");
             return 1;
         }
@@ -570,7 +572,7 @@ int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElem
         return 1;
     }
 
-    g_object_set(G_OBJECT (source), "do-timestamp", TRUE, "device", "/dev/video0", NULL);
+    g_object_set(G_OBJECT (source), "do-timestamp", TRUE, "device", device, NULL);
 
     /* Determine whether device supports h264 encoding and select a streaming resolution supported by the device*/
     if (GST_STATE_CHANGE_FAILURE == gst_element_set_state(source, GST_STATE_READY)) {

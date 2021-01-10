@@ -19,7 +19,7 @@ include_directories(${SDK}/src)
 include_directories(${SDK}/src/credential-providers)
 include_directories(${SDK}/open-source/amazon-kinesis-video-streams-producer-c/src/include)
 
-set(BUILD_ARGS -DBUILD_OPENSSL_PLATFORM=${BUILD_OPENSSL_PLATFORM})
+set(BUILD_ARGS -DBUILD_LOG4CPLUS_HOST=${BUILD_LOG4CPLUS_HOST})
 build_dependency(log4cplus ${BUILD_ARGS})
     
 option(BUILD_GSTREAMER_PLUGIN "Build kvssink GStreamer plugin" ON)

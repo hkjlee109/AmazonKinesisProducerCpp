@@ -547,7 +547,7 @@ int gstreamer_live_source_init(int argc, char* argv[], CustomData *data, GstElem
 
     LOG_DEBUG("Streaming with live source and width: " << width << ", height: " << height << ", fps: " << framerate << ", bitrateInKBPS" << bitrateInKBPS);
 
-    GstElement *source_filter, *filter, *appsink, *h264parse *source;
+    GstElement *source_filter, *filter, *appsink, *h264parse, *source;
 
     /* create the elemnents */
     /*

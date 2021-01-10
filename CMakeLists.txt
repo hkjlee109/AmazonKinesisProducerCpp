@@ -6,6 +6,12 @@ project(AmazonKinesisProducerCpp)
 set(CMAKE_CXX_STANDARD 11)
 set(SDK "${CMAKE_CURRENT_SOURCE_DIR}/Library/sdk")
 
+set(OPEN_SRC_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/open-source)
+set(ENV{PKG_CONFIG_PATH}
+  "$ENV{PKG_CONFIG_PATH}:${OPEN_SRC_INSTALL_PREFIX}/lib/pkgconfig")
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${OPEN_SRC_INSTALL_PREFIX})
+set(ENV{PATH} "$ENV{PATH}:${OPEN_SRC_INSTALL_PREFIX}/bin")
+
 file(GLOB PIC_HEADERS "${SDK}/open-source/amazon-kinesis-video-streams-pic/src/*/include")
 
 include_directories(${PIC_HEADERS})
